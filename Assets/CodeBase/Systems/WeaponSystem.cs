@@ -1,48 +1,38 @@
-using System.Collections;
-using System.Collections.Generic;
 using CodeBase.GamePlay;
-using CodeBase.Systems;
 using UniRx;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UIElements;
 
 public class WeaponSystem : MonoBehaviour
 {
     [SerializeField] private int _rotateLim = 30;
-    [SerializeField] private float _shootTime = 0.2f;
+    [SerializeField] private float _shootTime = 0.5f;
     [SerializeField] private Weapon _weapon;
+    [SerializeField] private BulletSystem _bulletSystem;
     [SerializeField] private Bullet _bulletPref;
     [SerializeField] private Camera _camera; //todo move somewhere
 
-    private PoolList<Bullet> _bullets;
     
     public bool Active { get; set; }
     private float _shootTimer;
-
-
-    public void Construct()
+    
+    public void Construct(BulletSystem bulletSystem)
     {
-        
+        _bulletSystem = bulletSystem;
     }
     public void Init()
     {
-        _bullets = new PoolList<Bullet>(_weapon.SpawnPoint);
         
         Observable.EveryUpdate().Subscribe(_ =>
         {
-            //MoveBullets();
-            RotateWeapon();
-
             if (!Active)
             {
                 return;
             }
-
+            
+            RotateWeapon();
             Shoot();
         }).AddTo(this);
     }
-    
 
     private void RotateWeapon()
     {
@@ -56,16 +46,21 @@ public class WeaponSystem : MonoBehaviour
         var worldPosition = _camera.ScreenToWorldPoint(screenPosition);
         var direction = worldPosition - _weapon.transform.position;
         direction.y = 0;
-        var targetRotation = Quaternion.LookRotation(direction); // todo slerp??
-        if (targetRotation.eulerAngles.y > _rotateLim)
-        {
-            targetRotation.y = _rotateLim;
-        }
-        else if (targetRotation.eulerAngles.y < -_rotateLim)
-        {
-            targetRotation.y = -_rotateLim;
-        }
-        _weapon.transform.rotation = Quaternion.Slerp(_weapon.transform.rotation, targetRotation, Time.deltaTime * 5f);
+
+        _weapon.transform.rotation = GetLimitedRotation(direction);
+    }
+    
+    //todo упростить???
+    private Quaternion GetLimitedRotation(Vector3 direction)
+    {
+        var targetRotation = Quaternion.LookRotation(direction);
+        var targetAngleY = targetRotation.eulerAngles.y;
+        targetAngleY = Mathf.Repeat(targetAngleY + 180f, 360f) - 180f;
+
+        // Ограничиваем угол в пределах [-_rotateLim, _rotateLim]
+        targetAngleY = Mathf.Clamp(targetAngleY, -_rotateLim, _rotateLim);
+
+        return Quaternion.Slerp(_weapon.transform.rotation, Quaternion.Euler(0, targetAngleY, 0), Time.deltaTime * 5f);
     }
 
     private void Shoot()
@@ -76,7 +71,8 @@ public class WeaponSystem : MonoBehaviour
             return;
         }
 
-        var bullet = _bullets.GetOrCreate(_bulletPref);
-
+        var direction = _weapon.SpawnPoint.position - _weapon.transform.position;
+        _bulletSystem.CreateBullet(_weapon.SpawnPoint.position, direction);
+        _shootTimer = _shootTime;
     }
 }
