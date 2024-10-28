@@ -32,5 +32,13 @@ public class BulletSystem : MonoBehaviour
         var bullet = _bullets.GetOrCreate(_bulletPrefab);
         bullet.transform.position = position;
         bullet.Init(direction);
+        bullet.Hit += OnHit;
+
+    }
+
+    private void OnHit(Bullet bullet)
+    {
+        bullet.Hit -= OnHit;
+        _bullets.MoveToUnused(bullet);
     }
 }

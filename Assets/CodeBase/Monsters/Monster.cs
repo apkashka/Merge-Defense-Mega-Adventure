@@ -1,20 +1,19 @@
 using System;
 using CodeBase.Data;
 using CodeBase.Systems;
+using UniRx;
 using UnityEngine;
 
 namespace CodeBase.Monsters
 {
     public class Monster : MonoBehaviour
     {
-        public event Action Deactivated;
-
         private float _speed;
-        private int _health;
+        public IntReactiveProperty Health = new();
         public void Init(MonsterData data)
         {
             _speed = data.speed;
-            _health = data.health;
+            Health.Value = data.health;
         }
 
         //todo вытащить, обдумать

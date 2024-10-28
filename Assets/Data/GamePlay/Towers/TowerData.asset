@@ -9,13 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 722a73b1adb14992aecfada6b18d2af1, type: 3}
-  m_Name: LevelData
+  m_Script: {fileID: 11500000, guid: 13b6933edf5f48fbb5700a8ba831d808, type: 3}
+  m_Name: TowerData
   m_EditorClassIdentifier: 
-  waves:
-  - monsters:
-    - {fileID: 0}
-    - {fileID: 0}
-    ratio: 0300000001000000
-    amount: 10
-    delay: 2
+  id: 1
+  damage: 5
+  powerUp: 2
+  leveling:
+  - prefab: 

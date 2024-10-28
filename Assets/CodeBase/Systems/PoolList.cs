@@ -11,25 +11,27 @@ namespace CodeBase.Systems
     {
         private readonly Transform _container;
         private readonly List<T> _activeUnits;
-        private readonly Stack<T> _unusedUnits;
+        private readonly Stack<T> _unused;
 
         public PoolList(Transform container)
         {
             _container = container;
             _activeUnits = new DisposableList<T>();
-            _unusedUnits = new Stack<T>();
+            _unused = new Stack<T>();
         }
 
         //todo think about prefab, can't init pref without monsterData
         public T GetOrCreate(T prefab)
         {
-            if (_unusedUnits.TryPop(out var oldElem))
+            if (_unused.TryPop(out var elem))
             {
-                oldElem.gameObject.SetActive(true);
-                return oldElem;
+                elem.gameObject.SetActive(true);
+            }
+            else
+            {
+                elem = Object.Instantiate(prefab, _container);
             }
 
-            var elem = Object.Instantiate(prefab, _container);
             _activeUnits.Add(elem);
             return elem;
         }
@@ -40,7 +42,7 @@ namespace CodeBase.Systems
             //_activeUnits.AddToRemove(element);
             _activeUnits.Remove(element);
             element.gameObject.SetActive(false);
-            _unusedUnits.Push(element);
+            _unused.Push(element);
         }
 
         public IEnumerator<T> GetEnumerator()
