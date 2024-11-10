@@ -1,4 +1,3 @@
-using CodeBase.GamePlay;
 using UniRx;
 using UnityEngine;
 
@@ -10,12 +9,21 @@ namespace CodeBase.Systems
         [SerializeField] private float _shootTime = 0.5f;
         [SerializeField] private Weapon _weapon;
 
-        [SerializeField] private Bullet _bulletPref;
         [SerializeField] private Camera _camera; //todo move somewhere
     
         private BulletSystem _bulletSystem;
-    
-        public bool Active { get; set; }
+
+        private bool _active;
+        public bool Active
+        {
+            get => _active;
+            set
+            {
+                _weapon.gameObject.SetActive(_active);
+                _active = value;
+            }
+        }
+
         private float _shootTimer;
     
         public void Construct(BulletSystem bulletSystem)
@@ -71,8 +79,8 @@ namespace CodeBase.Systems
                 return;
             }
 
-            var direction = _weapon.SpawnPoint.position - _weapon.transform.position;
-            _bulletSystem.CreateBullet(_weapon.SpawnPoint.position, direction);
+            var direction = (_weapon.SpawnPoint.position - _weapon.transform.position).normalized;
+            _bulletSystem.CreateBullet(_weapon.SpawnPoint.position, direction, _weapon.Damage);
             _shootTimer = _shootTime;
         }
     }

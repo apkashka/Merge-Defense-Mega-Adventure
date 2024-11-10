@@ -1,44 +1,50 @@
 using CodeBase.GamePlay;
-using CodeBase.Systems;
+using CodeBase.ToRework.PoolList;
 using UniRx;
 using UnityEngine;
 
 public class BulletSystem : MonoBehaviour
 {
     [SerializeField] private Bullet _bulletPrefab;
-    
-    private PoolList<Bullet> _bullets;
+    private MultiplePool<Bullet> _bullets;
 
     public void Init()
     {
-        _bullets = new PoolList<Bullet>(transform);
+        _bullets = new MultiplePool<Bullet>(transform);
         
         Observable.EveryUpdate().Subscribe(_ =>
         {
-            MoveBullets();
+            foreach (var bullet in _bullets.GetAll())
+            {
+                bullet.Move();
+                bullet.CheckTime();
+            }
         }).AddTo(this);
     }
 
-    private void MoveBullets()
+    //todo separate init and creation
+    public void CreateBullet(Vector3 position, Vector3 direction, float damage)
     {
-        foreach (var bullet in _bullets)
-        {
-            bullet.Move();
-        }
-    }
-
-    public void CreateBullet(Vector3 position, Vector3 direction)
-    {
+        //todo norm
         var bullet = _bullets.GetOrCreate(_bulletPrefab);
         bullet.transform.position = position;
-        bullet.Init(direction);
+        bullet.Init(direction, damage);
         bullet.Hit += OnHit;
-
+        bullet.OnTimer += OnTimer;
     }
+
+    private void OnTimer(Bullet bullet)
+    {
+        bullet.OnTimer -= OnTimer;
+        bullet.Hit -= OnHit;
+        _bullets.Remove(bullet);    }
 
     private void OnHit(Bullet bullet)
     {
         bullet.Hit -= OnHit;
-        _bullets.MoveToUnused(bullet);
+        bullet.OnTimer -= OnTimer;
+        _bullets.Remove(bullet);
     }
+    
+    
 }

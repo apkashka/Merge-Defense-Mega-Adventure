@@ -1,4 +1,4 @@
-using CodeBase.Monsters;
+using CodeBase.GamePlay.Monsters;
 using UnityEngine;
 
 namespace CodeBase.Data

@@ -11,6 +11,7 @@ namespace CodeBase.Data
         public int powerUp;
         
         public Leveling[] leveling;
+        public float reloadTime = 2;
 
         public int GetDamage(int level)
         {

@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,21 +5,22 @@ using Object = UnityEngine.Object;
 
 namespace CodeBase.Systems
 {
-    //todo НЕ ТРОГАТЬ ПОКА НЕ СДЕЛАЮ НОРМ ПО ПРОЕКТУ
+    //todo to use only inside MultiplePool
     public class PoolList<T> : IEnumerable<T> where T : MonoBehaviour
     {
+        private const int MaxUnusedSize = 8; //todo
+
         private readonly Transform _container;
-        private readonly List<T> _activeUnits;
+        private readonly DelayedList<T> _activeUnits;
         private readonly Stack<T> _unused;
 
         public PoolList(Transform container)
         {
             _container = container;
-            _activeUnits = new DisposableList<T>();
+            _activeUnits = new DelayedList<T>();
             _unused = new Stack<T>();
         }
 
-        //todo think about prefab, can't init pref without monsterData
         public T GetOrCreate(T prefab)
         {
             if (_unused.TryPop(out var elem))
@@ -36,13 +36,27 @@ namespace CodeBase.Systems
             return elem;
         }
 
-        //todo think
-        public void MoveToUnused(T element)
+        public void MoveToUnused(T element, bool withDelay)
         {
-            //_activeUnits.AddToRemove(element);
-            _activeUnits.Remove(element);
+            if (withDelay)
+            {
+                _activeUnits.AddToRemove(element);
+            }
+            else
+            {
+                _activeUnits.Remove(element);
+            }
+            
             element.gameObject.SetActive(false);
-            _unused.Push(element);
+            
+            if (_unused.Count < MaxUnusedSize)
+            {
+                _unused.Push(element);
+            }
+            else
+            {
+                Object.Destroy(element.gameObject); // Удаление лишних объектов
+            }
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -54,10 +68,14 @@ namespace CodeBase.Systems
         {
             return GetEnumerator();
         }
+
+        public void RemoveDelayed()
+        {
+            _activeUnits.DelayedRemove();
+        }
     }
 
-    //todo think about
-    public class DisposableList<T> : List<T>, IDisposable
+    public class DelayedList<T> : List<T>
     {
         private readonly List<T> _toRemoveList = new();
 
@@ -66,15 +84,16 @@ namespace CodeBase.Systems
             _toRemoveList.Add(element);
         }
 
-        public void Dispose()
+        public void DelayedRemove()
         {
             if (_toRemoveList.Count == 0)
             {
                 return;
             }
-
+            
             foreach (var element in _toRemoveList)
             {
+                Debug.Log($"{element} removed from active");
                 Remove(element);
             }
 

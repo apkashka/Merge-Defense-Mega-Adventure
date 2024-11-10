@@ -11,12 +11,12 @@ namespace CodeBase.GamePlay
         [SerializeField] private LevelData _levelData;
         
         public Transform SpawnPoint => _spawnPoint;
-        private UnitSystem _unitSystem;
+        private MonsterSystem _monsterSystem;
         private Coroutine _wavesRoutine;
 
-        public void Construct(UnitSystem unitSystem)
+        public void Construct(MonsterSystem monsterSystem)
         {
-            _unitSystem = unitSystem;
+            _monsterSystem = monsterSystem;
         }
 
         public void StartLevel()
@@ -38,7 +38,7 @@ namespace CodeBase.GamePlay
             {
                 for (int i = 0; i < wave.amount; i++)
                 {
-                    _unitSystem.CreateMonster(wave.GetMonsterData());
+                    _monsterSystem.CreateMonster(wave.GetMonsterData());
                 }
 
                 yield return new WaitForSeconds(_levelData.delay);
