@@ -17,3 +17,4 @@ MonoBehaviour:
   powerUp: 2
   leveling:
   - prefab: 
+  reloadTime: 5

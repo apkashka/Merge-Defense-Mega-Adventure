@@ -1,9 +1,10 @@
 using CodeBase.GamePlay;
+using CodeBase.Systems;
 using CodeBase.ToRework.PoolList;
 using UniRx;
 using UnityEngine;
 
-public class BulletSystem : MonoBehaviour
+public class BulletSystem : SystemBehavior
 {
     [SerializeField] private Bullet _bulletPrefab;
     private MultiplePool<Bullet> _bullets;
@@ -14,12 +15,22 @@ public class BulletSystem : MonoBehaviour
         
         Observable.EveryUpdate().Subscribe(_ =>
         {
+            if (!Active)
+            {
+                return;
+            }
+            
             foreach (var bullet in _bullets.GetAll())
             {
                 bullet.Move();
                 bullet.CheckTime();
             }
         }).AddTo(this);
+    }
+
+    protected override void OnActive()
+    {
+        //todo make saloot of bullets
     }
 
     //todo separate init and creation

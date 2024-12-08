@@ -30,7 +30,7 @@ namespace CodeBase.ToRework.PoolList
         //todo separate container
         public void Remove(T element, bool fromForeach = true)
         {
-            var pool = _poolsDic[element.GetHashCode()]; //todo GetHashCode to interface??
+            var pool = _poolsDic[element.GetHashCode()]; //todo GetHashCode to interface or prefab name??
             pool.MoveToUnused(element, fromForeach);
         }
 

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace CodeBase.Systems
 {
-    public class TowerSystem : MonoBehaviour //todo separate build and tower control, buildField mix with field
+    public class TowerSystem : SystemBehavior //todo separate build and tower control, buildField mix with field
     {
         [SerializeField] private BulletSystem _bulletSystem;
         [SerializeField] private MonsterSystem _monsterSystem;
@@ -22,11 +22,15 @@ namespace CodeBase.Systems
             
             Observable.EveryUpdate().Subscribe(_ =>
             {
-                _closestMonster = _monsterSystem.GetClosestMonster();
+                if (!Active)
+                {
+                    return;
+                }
+                //_closestMonster = _monsterSystem.GetClosestMonster();
 
                 foreach (var tower in _towerPool.GetAll())
                 {
-                    Rotate(tower);
+                    //Rotate(tower);
                     Shoot(tower);
                 }
             });  
@@ -45,8 +49,9 @@ namespace CodeBase.Systems
         {
             if (tower.CanShoot())
             {
-                var direction = (_closestMonster - tower.SpawnPoint.position).normalized; 
-                _bulletSystem.CreateBullet(tower.SpawnPoint.position, direction, tower.Data.damage);
+                //var direction = (_closestMonster - tower.SpawnPoint.position).normalized; 
+                var direction = Vector3.forward;
+                _bulletSystem.CreateBullet(tower.SpawnPoint.position, direction, tower.Data.damage); //todo getDamage
             }
         }
 

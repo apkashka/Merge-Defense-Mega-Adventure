@@ -5,11 +5,12 @@ using UnityEngine;
 
 namespace CodeBase.GamePlay
 {
-    public class Level : MonoBehaviour
+    public class BattleGround : MonoBehaviour
     {
         [SerializeField] private Transform _spawnPoint;
-        [SerializeField] private LevelData _levelData;
         
+        
+        private LevelData _levelData;
         public Transform SpawnPoint => _spawnPoint;
         private MonsterSystem _monsterSystem;
         private Coroutine _wavesRoutine;
@@ -19,8 +20,9 @@ namespace CodeBase.GamePlay
             _monsterSystem = monsterSystem;
         }
 
-        public void StartLevel()
+        public void StartLevel(LevelData level) //todo check if need to move
         {
+            _levelData = level;
             if (_levelData.waves.Length == 0)
             {
                 Debug.LogError("No waves selected");

@@ -2,19 +2,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using CodeBase.Extra;
+using CodeBase.Systems;
 using Newtonsoft.Json;
 using UnityEngine;
 
-namespace CodeBase.Systems
+namespace CodeBase.Infrastructure.Services
 {
-    public class Field // todo towerField???
+    public class TowerField
     {
-        private string FilePath => Application.dataPath + "Field.bin";
+        private static string FilePath => Application.dataPath + "Field.bin";
+        public List<SpotData> SpotsMatrix { get; private set; }
 
-        private List<SpotData> _spotsMatrix;
-        public List<SpotData> SpotsMatrix => _spotsMatrix;
-
-        public Field()
+        public TowerField()
         {
             if (File.Exists(FilePath))
             {
@@ -27,7 +26,7 @@ namespace CodeBase.Systems
 
         private void CreateNewField()
         {
-            _spotsMatrix = new List<SpotData>();
+            SpotsMatrix = new List<SpotData>();
             for (int i = 0; i < Constants.FieldRows; i++)
             {
                 for (int j = 0; j < Constants.FieldColumns; j++)
@@ -36,27 +35,32 @@ namespace CodeBase.Systems
                     {
                         X = j, //??
                         Y = i,
-                        TowerId = 0,
+
+                        TowerId = i == 0 || j == 0 || j == Constants.FieldColumns - 1
+                            ? -1 //todo blocked in the beginning
+                            : 0,
                         Level = 0
                     };
-                    _spotsMatrix.Add(spot);
+                    SpotsMatrix.Add(spot);
                 }
             }
 
-            for (int i = 0; i < Constants.FieldColumns; i++)
+            var spotsWithTowers = new[] { 16, 17, 18 }; //todo to norm
+            foreach (var spotId in spotsWithTowers)
             {
-                _spotsMatrix[i].TowerId = -1;
+                SpotsMatrix[spotId].TowerId = 1;
+                SpotsMatrix[spotId].Level = 1;
             }
         }
 
         public SpotData GetSpot(int id)
         {
-            return _spotsMatrix[id];
+            return SpotsMatrix[id];
         }
 
         public SpotData GetFreeSpot()
         {
-            var freeSpots = _spotsMatrix.Where(spot => spot.TowerId == 0).ToArray();
+            var freeSpots = SpotsMatrix.Where(spot => spot.TowerId == 0).ToArray();
             if (!freeSpots.Any())
             {
                 return null;
@@ -70,22 +74,27 @@ namespace CodeBase.Systems
 
         public void Save()
         {
-            var json = JsonConvert.SerializeObject(_spotsMatrix);
+            var json = JsonConvert.SerializeObject(SpotsMatrix);
             File.WriteAllText(FilePath, json);
         }
 
         private void Load()
         {
             var json = File.ReadAllText(FilePath);
-            _spotsMatrix = JsonConvert.DeserializeObject<List<SpotData>>(json);
+            SpotsMatrix = JsonConvert.DeserializeObject<List<SpotData>>(json);
         }
 
         public SpotData SpotToMerge(int id)
         {
             var selectedSpot = GetSpot(id);
-            var mergeSpot = _spotsMatrix.FirstOrDefault(spot =>
+            var mergeSpot = SpotsMatrix.FirstOrDefault(spot =>
                 spot.TowerId == selectedSpot.TowerId && spot.Level == selectedSpot.Level);
             return selectedSpot == mergeSpot ? null : mergeSpot;
+        }
+
+        public static void DeleteFile()
+        {
+            File.Delete(FilePath);
         }
     }
 }

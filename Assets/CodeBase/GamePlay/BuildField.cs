@@ -1,41 +1,50 @@
 using System.Collections.Generic;
 using System.Linq;
+using CodeBase.Infrastructure.Services;
 using CodeBase.Systems;
 using UnityEngine;
 
 namespace CodeBase.GamePlay
 {
     //todo rename
-    public class BuildField : MonoBehaviour
+    public class BuildField : MonoBehaviour //todo move in battleGround
     {
-        [SerializeField] private List<Spot> _towerSpots; //todo serialize in rows and columns or change somehow
+        [SerializeField] private List<TowerLine> _towerLines; //todo serialize in rows and columns or change somehow
         [SerializeField] private TowerSystem _towerSystem;
 
         private int? _id;
-        private Field _field;
+        private TowerField _field;
+        private List<TowerSpot> _towerSpots;
 
-        public void Init(Field field)
+        public void Init(ProgressService progressService)
         {
-            if (_towerSpots.Count != field.SpotsMatrix.Count)
+            _towerSpots = _towerLines.SelectMany(line => line.Spots).ToList();
+            if (_towerSpots.Count != progressService.TowerField.SpotsMatrix.Count)
             {
                 Debug.LogError("Wrong spots count");
                 return;
             }
 
-            _field = field;
-
+            _field = progressService.TowerField;
+            
             for (int i = 0; i < _towerSpots.Count; i++)
             {
-                _towerSpots[i].Init(i);
+                var blocked = _field.GetSpot(i).TowerId == -1;
+                _towerSpots[i].Init(i, blocked);
+                if (blocked)
+                {
+                    continue;
+                }
+
+                _towerSpots[i].Clicked += OnSpotClicked; //todo unsubscribe??
             }
 
-            _towerSpots.ForEach(spot => spot.Clicked += OnSpotClicked);
-            CreateTowers(field);
+            CreateTowers(_field);
         }
 
-        private void CreateTowers(Field field)
+        private void CreateTowers(TowerField towerField)
         {
-            foreach (var spot in field.SpotsMatrix)
+            foreach (var spot in towerField.SpotsMatrix)
             {
                 if (spot.TowerId == -1)
                 {
@@ -66,11 +75,6 @@ namespace CodeBase.GamePlay
             SetTower(freeSpot);
         }
 
-        public void SaveField()
-        {
-            _field.Save();
-        }
-
         private void SetTower(SpotData spotData)
         {
             var tower = _towerSystem.CreateTower(spotData);
@@ -95,7 +99,7 @@ namespace CodeBase.GamePlay
                 {
                     return;
                 }
-                
+
                 _towerSpots.ForEach(spot => spot.Highlight(false));
                 foreach (var spotData in spots)
                 {
@@ -116,7 +120,7 @@ namespace CodeBase.GamePlay
                     _towerSpots[spotToMerge.i].RemoveTower();
                     spotToMerge.TowerId = 0;
                     spotToMerge.Level = 0;
-                    
+
                     var selectedSpot = _field.GetSpot(id);
                     selectedSpot.Level++;
                     _towerSpots[id].SetTower(_towerSystem.CreateTower(selectedSpot));

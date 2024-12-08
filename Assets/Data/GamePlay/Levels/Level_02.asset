@@ -10,9 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 722a73b1adb14992aecfada6b18d2af1, type: 3}
-  m_Name: Level_01 1
+  m_Name: Level_02
   m_EditorClassIdentifier: 
   waves:
   - {fileID: 11400000, guid: 97451f0b93ebc884e888fec8d540be77, type: 2}
   - {fileID: 11400000, guid: 72fd3c74911cfe04ba657eb2d9278cfc, type: 2}
+  - {fileID: 11400000, guid: 5e1bc813e8615e74389d948856c71933, type: 2}
+  - {fileID: 11400000, guid: df358377caf3cb745b88e34bed24313e, type: 2}
+  - {fileID: 11400000, guid: 97b20a6877da39043915623ea8550764, type: 2}
+  - {fileID: 11400000, guid: 9502d004558862b469df40a222b7e7bf, type: 2}
   delay: 6

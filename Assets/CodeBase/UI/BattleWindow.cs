@@ -1,37 +1,51 @@
-using CodeBase.UI;
+using CodeBase.Infrastructure.Services;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class BattleWindow : MonoBehaviour
+namespace CodeBase.UI
 {
-    private const string Shoot = "СТРЕЛЯЕМ";
-    private const string Build = "СТРОИМ";
-
-    [SerializeField] private Button _button;
-    [SerializeField] private TextMeshProUGUI _buttonText;
-    [SerializeField] private WeaponControl _weaponControl;
-    [SerializeField] private TowerBuild _towerBuild;
-
-    private bool _isBuild;
-
-    // Start is called before the first frame update
-    void Start()
+    public class BattleWindow : MonoBehaviour
     {
-        _button.onClick.AddListener(OnButtonClicked);
-        SetBuild(true);
-    }
+        private const string Shoot = "К СТРЕЛЬБЕ";
+        private const string Build = "НА СТРОЙКУ";
 
-    private void SetBuild(bool build)
-    {
-        _buttonText.text = build ? Build : Shoot;
-        _towerBuild.Activate(build);
-        _weaponControl.Activate(!build);
-        _isBuild = build;
-    }
+        [SerializeField] private Button _changeButton,_saveButton;
+        [SerializeField] private TextMeshProUGUI _buttonText;
+        [SerializeField] private WeaponControl _weaponControl;
+        [SerializeField] private BuildView _buildView;
 
-    private void OnButtonClicked()
-    {
-        SetBuild(!_isBuild);
+        private ProgressService _progress;
+        private bool _isBuild;
+
+        public void Construct(ProgressService progress)
+        {
+            _progress = progress;
+        }
+
+        private void Start()
+        {
+            _changeButton.onClick.AddListener(OnButtonClicked);
+            _saveButton.onClick.AddListener(SaveClicked);
+            SetBuild(true);
+        }
+
+        private void SaveClicked()
+        {
+            _progress.SaveProgress();
+        }
+
+        private void SetBuild(bool build)
+        {
+            _buttonText.text = build ? Shoot : Build;
+            _buildView.Activate(build);
+            _weaponControl.Activate(!build);
+            _isBuild = build;
+        }
+
+        private void OnButtonClicked()
+        {
+            SetBuild(!_isBuild);
+        }
     }
 }
