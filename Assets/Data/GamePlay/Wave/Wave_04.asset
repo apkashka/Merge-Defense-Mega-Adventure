@@ -15,4 +15,4 @@ MonoBehaviour:
   monsters:
   - {fileID: 11400000, guid: c3d2936869e772445967e5263fb236dc, type: 2}
   ratio: 01000000
-  amount: 4
+  monsterCount: 10

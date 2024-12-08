@@ -16,4 +16,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c3d2936869e772445967e5263fb236dc, type: 2}
   - {fileID: 11400000, guid: a863c7894af6e534e8fb177489398430, type: 2}
   ratio: 0100000003000000
-  amount: 6
+  monsterCount: 8

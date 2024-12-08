@@ -1,5 +1,6 @@
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace CodeBase.Data
 {
@@ -8,7 +9,7 @@ namespace CodeBase.Data
     {
         public MonsterData[] monsters;
         public int[] ratio; 
-        public int amount;
+        public int monsterCount;
 
         public MonsterData GetMonsterData()
         {

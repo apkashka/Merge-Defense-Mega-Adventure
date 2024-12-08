@@ -12,12 +12,16 @@ namespace CodeBase.Systems
 {
     public class MonsterSystem: SystemBehavior
     {
+        public System.Action NoMonsters; //todo 
+        
         [SerializeField] private Transform _lifeLine;
         [SerializeField] private float _xDelta;
         
         private MultiplePool<Monster> _poolList;
         private ProgressService _progress;
         private int _id;
+        
+        private int _monsterCount;
 
         //todo container???
         public void Init(Transform container, ProgressService progress)
@@ -64,8 +68,15 @@ namespace CodeBase.Systems
                     _poolList.Remove(monster);
                     monsterDispose?.Dispose(); //todo unsubscribe??
                     _progress.Gold.Value += 10; //todo to rewards
+                    _monsterCount--;
+                    if (_monsterCount == 0)
+                    {
+                        NoMonsters?.Invoke();
+                    }
                 }
             }).AddTo(monster);
+
+            _monsterCount++;
         }
 
         public Vector3 GetClosestMonster()

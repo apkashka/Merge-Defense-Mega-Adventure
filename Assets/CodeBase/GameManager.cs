@@ -7,6 +7,7 @@ using CodeBase.UI;
 using TMPro;
 using UniRx;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 namespace CodeBase
@@ -21,9 +22,10 @@ namespace CodeBase
         [SerializeField] private BattleWindow _battleWindow;
         [SerializeField] private ResourcesView _resourcesView;
         [SerializeField] private BuildView _buildView;
-        [SerializeField] private GameObject _startMenu;
+        
+        [SerializeField] private GameObject _startMenu, _endLevel;
         [SerializeField] private TextMeshProUGUI _levelText;
-        [SerializeField] private Button _startLevel;
+        [SerializeField] private Button _startLevel, _nextLevel;
         
         [Header("Systems")]
         [SerializeField] private MonsterSystem _monsterSystem;
@@ -43,6 +45,7 @@ namespace CodeBase
         private void Awake()
         {
             _startLevel.onClick.AddListener(StartLevel);
+            _nextLevel.onClick.AddListener(GoToNextLevel);
         }
 
         private void Start()
@@ -61,6 +64,7 @@ namespace CodeBase
             _towerSystem.Init(); //todo construct??
             _buildField.Init(_progress);
             _battleGround.Construct(_monsterSystem);
+            _battleGround.LastWaveCreated += StartCheckingMonsters;
 
             _levelText.text = "УРОВЕНЬ: " + (_progress.Level.Value + 1);
         }
@@ -73,6 +77,13 @@ namespace CodeBase
             _battleGround.StartLevel(CurrentLevel);
             _startMenu.SetActive(false);
             _gameplayPart.SetActive(true);
+        }
+        
+        private void GoToNextLevel()
+        {
+            _progress.Level.Value++;
+            _progress.SaveProgress();
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
         }
 
         private void CheckHealth(int health)
@@ -87,6 +98,22 @@ namespace CodeBase
             _towerSystem.Active = false;
             _weaponSystem.Active = false;
             Debug.LogError("GameOver");
+        }
+
+        private void StartCheckingMonsters()
+        {
+            _monsterSystem.NoMonsters += GameOver;
+        }
+
+        private void GameOver()
+        {
+            _monsterSystem.NoMonsters -= GameOver;
+            
+            _monsterSystem.Active = false;
+            _bulletSystem.Active = false;
+            _towerSystem.Active = false;
+            _weaponSystem.Active = false;
+            _endLevel.SetActive(true);
         }
     }
 }

@@ -7,8 +7,9 @@ namespace CodeBase.GamePlay
 {
     public class BattleGround : MonoBehaviour
     {
+
+        public System.Action LastWaveCreated;
         [SerializeField] private Transform _spawnPoint;
-        
         
         private LevelData _levelData;
         public Transform SpawnPoint => _spawnPoint;
@@ -36,16 +37,21 @@ namespace CodeBase.GamePlay
         private IEnumerator StartWavesRoutine()
         {
             yield return new WaitForSeconds(1);
-            foreach (var wave in _levelData.waves)
+            for (var index = 0; index < _levelData.waves.Length; index++)
             {
-                for (int i = 0; i < wave.amount; i++)
+                var wave = _levelData.waves[index];
+                for (int i = 0; i < wave.monsterCount; i++)
                 {
                     _monsterSystem.CreateMonster(wave.GetMonsterData());
                 }
 
+                if (index == _levelData.waves.Length - 1)
+                {
+                    LastWaveCreated?.Invoke();
+                }
                 yield return new WaitForSeconds(_levelData.delay);
             }
-            
+
             Debug.Log("Waves Generation Finished");
         }
     }
